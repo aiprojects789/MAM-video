@@ -9,8 +9,8 @@ from PIL import Image
 import cv2
 import numpy as np
 import whisper
-# from moviepy import VideoFileClip, AudioFileClip, AudioClip
-from moviepy.editor import VideoFileClip, AudioFileClip, AudioClip
+from moviepy import VideoFileClip, AudioFileClip, AudioClip
+# from moviepy.editor import VideoFileClip, AudioFileClip, AudioClip
 import google.generativeai as genai
 from pytube import YouTube
 from transformers import (
