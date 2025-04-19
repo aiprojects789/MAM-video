@@ -60,7 +60,7 @@ rekognition = boto3.client(
     region_name="us-east-1"
 )
 
-st.title("🎬 AI-Powered Video Analyzer & Editor")
+st.title("🎬 AI-Powered Video Analyzer")
 
 # --- Helpers ---
 def save_temp_video(uploaded):
