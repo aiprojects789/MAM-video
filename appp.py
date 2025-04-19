@@ -70,41 +70,88 @@ def save_temp_video(uploaded):
     return path, temp_dir
 
 
-def transcribe(path):
-    st.info("Transcribing with Google Cloud Speech‑to‑Text…")
+# def transcribe(path):
+#     st.info("Transcribing with Google Cloud Speech‑to‑Text…")
     
-    # build output path
+#     # build output path
+#     base, _ = os.path.splitext(path)
+#     audio_path = base + "_audio.wav"
+    
+#     clip = AudioFileClip(path)
+    
+#     # always write as mono at 16 kHz
+#     clip.write_audiofile(
+#         audio_path,
+#         fps=16000,
+#         ffmpeg_params=["-ac", "1"],    # <— force 1 audio channel
+#         logger=None
+#     )
+    
+#     # load bytes and delete temp file
+#     with open(audio_path, "rb") as f:
+#         audio_content = f.read()
+#     os.remove(audio_path)
+
+#     # configure Google Speech API
+#     audio = speech.RecognitionAudio(content=audio_content)
+#     config = speech.RecognitionConfig(
+#         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+#         sample_rate_hertz=16000,
+#         language_code="en-US",
+#         enable_automatic_punctuation=True
+#     )
+#     response = speech.SpeechClient().recognize(config=config, audio=audio)
+    
+    # # return the joined transcript
+    # time.sleep(5)
+    # return " ".join(r.alternatives[0].transcript for r in response.results)
+
+
+
+def transcribe(path):
+    # Convert video/audio to mono 16kHz WAV
     base, _ = os.path.splitext(path)
     audio_path = base + "_audio.wav"
     
     clip = AudioFileClip(path)
-    
-    # always write as mono at 16 kHz
     clip.write_audiofile(
         audio_path,
         fps=16000,
-        ffmpeg_params=["-ac", "1"],    # <— force 1 audio channel
+        ffmpeg_params=["-ac", "1"],
         logger=None
     )
     
-    # load bytes and delete temp file
+    # Read audio content and clean up
     with open(audio_path, "rb") as f:
         audio_content = f.read()
     os.remove(audio_path)
 
-    # configure Google Speech API
     audio = speech.RecognitionAudio(content=audio_content)
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code="en-US",
-        enable_automatic_punctuation=True
-    )
-    response = speech.SpeechClient().recognize(config=config, audio=audio)
-    
-    # return the joined transcript
-    time.sleep(5)
-    return " ".join(r.alternatives[0].transcript for r in response.results)
+
+    # Try different language codes
+    languages = ["en-US", "ar", "ur"]
+    best_transcript = ""
+
+    for lang_code in languages:
+        config = speech.RecognitionConfig(
+            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=16000,
+            language_code=lang_code,
+            enable_automatic_punctuation=True
+        )
+
+        try:
+            response = speech.SpeechClient().recognize(config=config, audio=audio)
+            transcript = " ".join(r.alternatives[0].transcript for r in response.results)
+
+            if len(transcript) > len(best_transcript):
+                best_transcript = transcript
+
+        except:
+            continue
+
+    time.sleep(2)
+    return best_transcript
 
 
 
